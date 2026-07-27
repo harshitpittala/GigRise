@@ -4,6 +4,24 @@ This file records every amendment made to any finalized document in `docs/`, per
 
 ---
 
+## 2026-07-18 — Phase 0.3 Implementation: CI Pipeline (IMPLEMENTATION_PLAN.md task P0-T6)
+
+**Scoping note:** `IMPLEMENTATION_PLAN.md` has no literal "Phase 0.1/0.2/0.3" headers — it has one "Phase 0" with tasks P0-T1 through P0-T8. Prior sessions mapped "Phase 0.1" → P0-T1/T2 (monorepo structure) and "Phase 0.2" → P0-T7 plus the framework-configuration work. By elimination, the only remaining task that is (a) not yet done, (b) pure code/config with no external account dependency, and (c) outside this task's excluded territory (auth/Supabase/APIs/business logic/DB models/pages) is **P0-T6: "GitHub Actions pipeline: lint → type-check → build."** This is what was implemented as "Phase 0.3." P0-T3/T4/T5 (Supabase/Vercel/Render/Razorpay/Resend/Cloudinary/Sentry account provisioning) remain outstanding — they require real external accounts and credentials, which cannot be created by a coding session.
+
+Scope was kept to exactly P0-T6's own stated task ("lint → type-check → build"), not `PROJECT_SETUP.md` §10's fuller prose pipeline description (which also mentions unit tests, integration tests, and a security baseline scan) — no test suite exists anywhere in this repo yet, and `IMPLEMENTATION_PLAN.md` Phase 0's own "Testing requirements" field explicitly states the bar for this phase is "lint/type-check/build," not test execution. Adding empty/fake test stages now would misrepresent coverage that doesn't exist.
+
+| Date | Document | Section | Reason | Impact |
+|---|---|---|---|---|
+| 2026-07-18 | `config/README.md` | Body text | Corrected: GitHub Actions workflows and Dependabot config must live under `.github/`, GitHub's required path — not literally inside `config/` as the Phase 0.1 note implied. This folder's stated purpose (repo-root tooling config) still covers them conceptually. | Low — clarifies a prior note now that the deferred work is delivered; no architectural change |
+
+**What was built:** `.github/workflows/ci.yml` (lint → format:check → type-check → build, triggered on PRs and pushes to `main`); `.github/dependabot.yml` (weekly, grouped by ecosystem: npm, pip for `apps/api`, github-actions) — Dependabot chosen over Renovate per `PROJECT_SETUP.md` §6's "Renovate or Dependabot" (either pre-approved; Dependabot needs only a config file, Renovate needs a separate GitHub App install, which isn't achievable from a coding session). Both YAML files validated for syntax; the exact command sequence in `ci.yml` re-verified locally (`pnpm lint`, `pnpm format:check`, `pnpm type-check`, `pnpm build` all pass).
+
+**Small hygiene fix noticed during verification:** running `pnpm type-check` generated `*.tsbuildinfo` cache files in `apps/web`/`apps/admin` (from the `"incremental": true` tsconfig option set in Phase 0.2) that `.gitignore` didn't yet exclude — added `*.tsbuildinfo` to `.gitignore` so machine-specific build cache never gets tracked, matching the existing `.turbo/`/`.next/` entries' intent.
+
+**Explicitly deferred, not silently omitted:** unit/integration test stages and OWASP ZAP security scanning (`PROJECT_SETUP.md` §9/§10) — added once a real test suite and running API endpoints exist to test/scan. Auto-merge-for-security-patches (`PROJECT_SETUP.md` §6) — requires a separate workflow plus a repository setting, out of scope for this task. Branch-protection rules requiring this CI check before merge — a GitHub repository *setting*, not a file, so it cannot be configured by a coding session; the founder needs to enable it manually.
+
+---
+
 ## 2026-07-17 — Phase 0.2 Implementation: Framework Configuration
 
 Tailwind v4 + shadcn/ui base tooling, React Query, React Hook Form/Zod, theme provider, and fonts configured for `apps/web`/`apps/admin`; FastAPI application bootstrap (settings, logging, SQLAlchemy/Alembic config, exception handling, base middleware) configured for `apps/api`. No authentication, database models, business logic, API routes, or UI pages were implemented, matching this phase's explicit scope. No documentation amendment was required — this phase's implementation didn't reveal any specification gap, only one genuine bug (below).

@@ -1,0 +1,68 @@
+# GigRise CI pipeline — PROJECT_SETUP.md §10, IMPLEMENTATION_PLAN.md Phase 0
+# task P0-T6: "GitHub Actions pipeline: lint → type-check → build."
+#
+# Scope note: PROJECT_SETUP.md §10's prose also describes eventual unit
+# test, integration test, and security-scan stages. Those are deliberately
+# NOT included here yet — no test suite exists anywhere in this repo at
+# this phase (IMPLEMENTATION_PLAN.md Phase 0's own "Testing requirements"
+# field states the bar for this phase explicitly: "a PR that touches
+# nothing should still pass lint/type-check/build"). Adding empty/fake
+# test stages now would misrepresent coverage that doesn't exist yet; the
+# corresponding stages are added to this workflow by whichever future
+# phase actually introduces a test suite (IMPLEMENTATION_PLAN.md §2).
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint-typecheck-build:
+    name: Lint, Format, Type-check, Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install JS/TS dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        run: pip install uv
+
+      - name: Install apps/api dependencies
+        working-directory: apps/api
+        run: uv sync --frozen
+
+      - name: Lint (ESLint + Ruff/Black/mypy via turbo)
+        run: pnpm lint
+
+      - name: Format check (Prettier)
+        run: pnpm format:check
+
+      - name: Type-check
+        run: pnpm type-check
+
+      - name: Build
+        run: pnpm build

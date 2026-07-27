@@ -1,0 +1,38 @@
+# Automated dependency updates — PROJECT_SETUP.md §6: "Renovate or
+# Dependabot, weekly cadence, grouped by ecosystem." Dependabot is chosen
+# over Renovate here specifically because it's natively built into GitHub
+# (a config file is enough to activate it) — Renovate requires installing
+# a separate GitHub App, which isn't something achievable from a config
+# file alone. Both options were already sanctioned by PROJECT_SETUP.md §6,
+# so this is an implementation-detail choice, not a new architectural
+# decision requiring its own ADR.
+#
+# Auto-merge-after-CI-passes for security patches (also described in §6)
+# is explicitly NOT configured here — that requires a separate workflow
+# reacting to Dependabot PRs plus a repository auto-merge setting, which
+# is out of scope for this task (GitHub Actions pipeline: lint →
+# type-check → build). Flagged, not silently omitted.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      npm-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "pip"
+    directory: "/apps/api"
+    schedule:
+      interval: "weekly"
+    groups:
+      pip-dependencies:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
