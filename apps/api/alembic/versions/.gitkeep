@@ -1,0 +1,1 @@
+No migrations exist yet — the first one lands once models/ has real ORM classes to generate a migration from (DATABASE_ARCHITECTURE.md, later phases).

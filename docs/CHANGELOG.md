@@ -4,6 +4,35 @@ This file records every amendment made to any finalized document in `docs/`, per
 
 ---
 
+## 2026-07-17 — Phase 0.2 Implementation: Framework Configuration
+
+Tailwind v4 + shadcn/ui base tooling, React Query, React Hook Form/Zod, theme provider, and fonts configured for `apps/web`/`apps/admin`; FastAPI application bootstrap (settings, logging, SQLAlchemy/Alembic config, exception handling, base middleware) configured for `apps/api`. No authentication, database models, business logic, API routes, or UI pages were implemented, matching this phase's explicit scope. No documentation amendment was required — this phase's implementation didn't reveal any specification gap, only one genuine bug (below).
+
+**Genuine bug found and fixed (permitted per this phase's "do not restructure Phase 0.1 unless a genuine bug" instruction):** several Phase 0.1 files had silently acquired CRLF line endings on disk (most likely Windows git's `core.autocrlf` behavior between sessions), which git's own diff view treated as unchanged but which Prettier correctly flagged against `.prettierrc.json`'s `endOfLine: "lf"`. Added `.gitattributes` (`* text=auto eol=lf`) to lock in LF regardless of local git config, then ran `pnpm format` once to normalize the affected files. This is a tooling-consistency fix, not an architecture or content change — no file's actual content changed beyond one JSX line-wrap Prettier applied to `apps/admin/app/layout.tsx`.
+
+**Derived/interpolated values, flagged for the record:** `DESIGN_SYSTEM.md` §2.4 specifies only the 500-step hex for Success/Warning/Error; the 100 (tint) and 700 (shade) steps needed for `packages/ui/src/styles/theme.css` were derived by interpolation (lighter/darker variants of the 500 base), consistent with the doc's own "final hex calibration happens in Figma" caveat. Similarly, dark-mode text-color semantic values (`text-heading`/`text-body`/`text-muted`) and shadow rgba values were not given explicit hex/rgba in `DESIGN_SYSTEM.md` and were derived following the same light/dark mapping pattern the document uses for `bg.*`/`border.*`. None of this changes the document's stated *structure* — only fills in draft values it already said were provisional.
+
+| Date | Document | Section | Reason | Impact |
+|---|---|---|---|---|
+| 2026-07-17 | *(none)* | — | No `docs/*.md` amendment was needed for this phase — the derived color/shadow values above live only in `packages/ui/src/styles/theme.css`, not in the design system document itself, since `DESIGN_SYSTEM.md` §2 already documents these as draft/provisional pending Figma calibration | — |
+
+---
+
+## 2026-07-16 — Phase 0.1 Implementation: Repository & Monorepo Foundation
+
+First production code in the repository — the monorepo scaffold described in `PROJECT_SETUP.md` §2–§8, per `IMPLEMENTATION_PLAN.md` Phase 0. No authentication, database, API, business logic, or UI pages were implemented, matching this phase's explicit scope.
+
+| Date | Document | Section | Reason | Impact |
+|---|---|---|---|---|
+| 2026-07-16 | `DECISIONS.md` | New ADR-018 | Founder explicitly requested Turborepo be added during Phase 0.1 implementation, overriding `PROJECT_SETUP.md` §6 as originally written (pnpm-only) | Medium — introduces one new tool/dependency; documented per `MASTER_DEVELOPMENT_GUIDE.md` §29's rule that a new external dependency requires an ADR |
+| 2026-07-16 | `PROJECT_SETUP.md` | §1 header, §6 | Turborepo added to the package-management tooling description; document status updated to reflect that Phase 0.1 is now implemented, not just specified | Medium — first amendment to this document driven by actual implementation rather than pure planning |
+
+**Naming confirmation (no document change needed):** the task prompt for this phase used `apps/crm`/`apps/backend` and `packages/shared`; the founder confirmed via clarifying question to keep `PROJECT_SETUP.md` §2's original names (`apps/admin`, `apps/api`, `packages/ui`/`types`/`utils`/`config`) rather than amend the document — implemented exactly as already specified, no drift introduced.
+
+**What was built:** root `package.json`/`pnpm-workspace.yaml`/`turbo.json`/`tsconfig` base/`.editorconfig`/`.prettierrc`/`.prettierignore`/expanded `.gitignore`/expanded `.env.example`/`README.md`; `packages/config` (shared ESLint + TSConfig presets), `packages/ui`, `packages/types`, `packages/utils` (all empty placeholders — no components/types/helpers invented ahead of real feature work); `apps/web`, `apps/admin` (minimal Next.js 15 App Router scaffolds, framework-default pages only); `apps/api` (FastAPI scaffold via `uv`, zero routes — not even `/health`, per this task's explicit "do not create APIs"); Husky pre-commit (`lint-staged`) and commit-msg (`commitlint`, Conventional Commits) hooks; `scripts/`, `shared/`, root `config/` placeholder folders with explanatory READMEs. Verified: `pnpm install`, `pnpm build`, `pnpm lint`, `pnpm format:check` all pass across every workspace package.
+
+---
+
 ## 2026-07-15 — Documentation Synchronization Pass (post `CROSS_DOCUMENT_REVIEW.md`)
 
 Following the full cross-document architecture review, every recommendation approved for immediate action was applied across six documents, and two new documents were created. This section records that entire pass. No document's existing intent was overridden without explanation — every entry below preserves the reasoning of the original text and states specifically what changed and why.

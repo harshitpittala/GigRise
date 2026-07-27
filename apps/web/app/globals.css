@@ -1,0 +1,21 @@
+@import "tailwindcss";
+@import "@gigrise/ui/styles/theme.css";
+
+/**
+ * Font-family tokens — app-specific because font loading (next/font) is
+ * per-Next.js-app, unlike the color/spacing/radius/shadow tokens in
+ * @gigrise/ui/styles/theme.css which are truly shared. The actual font
+ * variables (--font-inter, --font-display, --font-mono) are set on <html>
+ * by app/layout.tsx via next/font's `variable` option.
+ */
+@theme inline {
+  --font-ui: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display-serif), Georgia, serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+body {
+  background-color: var(--color-bg-app);
+  color: var(--color-text-body);
+  font-family: var(--font-ui);
+}

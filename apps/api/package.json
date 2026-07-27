@@ -1,0 +1,13 @@
+{
+  "name": "@gigrise/api",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Turborepo orchestration wrapper for the Python/FastAPI backend — actual dependency management is uv (pyproject.toml), not npm/pnpm. This file exists only so `turbo run <task>` can drive apps/api uniformly alongside the Next.js apps.",
+  "scripts": {
+    "dev": "uv run uvicorn main:app --reload --port 8000",
+    "build": "uv sync --frozen",
+    "lint": "uv run ruff check . && uv run black --check . && uv run mypy .",
+    "type-check": "uv run mypy .",
+    "test": "uv run pytest"
+  }
+}

@@ -1,0 +1,25 @@
+@import "tailwindcss";
+@import "@gigrise/ui/styles/theme.css";
+
+/**
+ * Font-family tokens — app-specific, same reasoning as apps/web.
+ *
+ * --font-display intentionally has NO custom webfont loaded here: per
+ * DESIGN_SYSTEM.md §3, the display typeface is "reserved exclusively for
+ * marketing/landing headlines... never inside the authenticated app," and
+ * apps/admin has no marketing/landing pages at all (it is 100%
+ * authenticated CRM). The variable still exists, mapped to a system serif
+ * fallback, so the token contract stays consistent across apps without
+ * shipping an unused webfont download.
+ */
+@theme inline {
+  --font-ui: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+body {
+  background-color: var(--color-bg-app);
+  color: var(--color-text-body);
+  font-family: var(--font-ui);
+}

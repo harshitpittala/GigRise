@@ -1,0 +1,208 @@
+/**
+ * GigRise shared design tokens — Tailwind CSS v4 theme.
+ *
+ * Translates DESIGN_SYSTEM.md §2 (Color), §3 (Typography), §4 (Spacing),
+ * §13 (Motion), §17 (consolidated Design Tokens) into Tailwind v4's
+ * CSS-first `@theme` configuration. Imported by each app's globals.css
+ * AFTER `@import "tailwindcss";` — this file does not import Tailwind
+ * itself, so it can be shared without pulling in a duplicate copy.
+ *
+ * Font-family tokens (--font-ui/--font-display/--font-mono) are
+ * DELIBERATELY NOT set here — font loading is per-app via next/font
+ * (PROJECT_SETUP.md §1.1's font-configuration item), so each app's own
+ * globals.css supplies those three variables after importing this file.
+ *
+ * Color values are DESIGN_SYSTEM.md §2's own draft values, explicitly
+ * marked there as "final hex calibration happens in Figma" — this file
+ * is the first faithful code translation of that structure, not a final
+ * brand calibration.
+ */
+
+/* ---------------------------------------------------------------------- */
+/* 1. Raw color scales (DESIGN_SYSTEM.md §2.1-2.4) — identical in both     */
+/*    themes; only which *semantic* role points to which step changes.    */
+/* ---------------------------------------------------------------------- */
+@theme {
+  /* Neutral (§2.1) */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f7f7f8;
+  --color-neutral-100: #ededf1;
+  --color-neutral-200: #dbdde3;
+  --color-neutral-300: #c2c5ce;
+  --color-neutral-400: #9498a3;
+  --color-neutral-500: #6b707c;
+  --color-neutral-600: #4e525c;
+  --color-neutral-700: #383b42;
+  --color-neutral-800: #24262b;
+  --color-neutral-900: #16171b;
+  --color-neutral-950: #0d0e10;
+
+  /* Spotlight Gold — primary brand accent (§2.2) */
+  --color-gold-100: #f5e9d3;
+  --color-gold-300: #d9b876;
+  --color-gold-500: #b8863a;
+  --color-gold-700: #8c6425;
+  --color-gold-900: #5c4118;
+
+  /* Trust Indigo — interactive/informational accent (§2.3) */
+  --color-indigo-100: #e4e3fb;
+  --color-indigo-300: #a8a4f0;
+  --color-indigo-500: #5b4fe9;
+  --color-indigo-700: #4038b0;
+  --color-indigo-900: #262163;
+
+  /* Semantic (§2.4). 100/700 tint-shade steps are a derived interpolation —
+     DESIGN_SYSTEM.md §2.4 only specified the 500 base per role; see
+     CHANGELOG.md for this Phase 0.2 amendment note. */
+  --color-success-100: #e3f5ec;
+  --color-success-500: #1e9e64;
+  --color-success-700: #146b45;
+  --color-warning-100: #fbebd9;
+  --color-warning-500: #c77c22;
+  --color-warning-700: #8f591a;
+  --color-error-100: #fbe4e4;
+  --color-error-500: #d33a3a;
+  --color-error-700: #9a2a2a;
+  /* Information deliberately aliases Indigo — §2.4: "informational and
+     interactive share one hue family so the palette doesn't grow a third
+     blue." No separate --color-info-* scale exists. */
+
+  /* ---------------------------------------------------------------------- */
+  /* 2. Spacing (§4) — the 4px grid, exact token set, nothing interpolated. */
+  /* ---------------------------------------------------------------------- */
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  --spacing-20: 80px;
+
+  /* Container widths (§4) */
+  --container-sm: 640px;
+  --container-md: 960px;
+  --container-lg: 1280px;
+  --container-xl: 1440px;
+
+  /* Breakpoints (§4) — named to match bp.sm/md/lg exactly, not Tailwind's
+     stock scale, since GigRise's thresholds differ from Tailwind's defaults. */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 1024px;
+  --breakpoint-lg: 1440px;
+
+  /* ---------------------------------------------------------------------- */
+  /* 3. Radius (§17) */
+  /* ---------------------------------------------------------------------- */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 999px;
+
+  /* ---------------------------------------------------------------------- */
+  /* 4. Typography scale (§3) — size/line-height pairs plus weights.        */
+  /*    No 700/bold weight token exists anywhere, deliberately (§3).        */
+  /* ---------------------------------------------------------------------- */
+  --text-display-lg: 56px;
+  --text-display-lg--line-height: 1.1;
+  --text-display-sm: 36px;
+  --text-display-sm--line-height: 1.15;
+  --text-heading-xl: 28px;
+  --text-heading-xl--line-height: 1.25;
+  --text-heading-lg: 22px;
+  --text-heading-lg--line-height: 1.3;
+  --text-heading-md: 18px;
+  --text-heading-md--line-height: 1.35;
+  --text-heading-sm: 16px;
+  --text-heading-sm--line-height: 1.4;
+  --text-body-lg: 16px;
+  --text-body-lg--line-height: 1.5;
+  --text-body-md: 14px;
+  --text-body-md--line-height: 1.5;
+  --text-body-sm: 13px;
+  --text-body-sm--line-height: 1.45;
+  --text-caption: 12px;
+  --text-caption--line-height: 1.4;
+  --text-overline: 11px;
+  --text-overline--line-height: 1.3;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  --tracking-tight: -0.01em; /* headings ≥24px, §3 */
+  --tracking-wide: 0.04em; /* text-overline only, §3 */
+
+  /* ---------------------------------------------------------------------- */
+  /* 5. Motion (§13/§17) */
+  /* ---------------------------------------------------------------------- */
+  --ease-out-standard: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  /* Named duration tokens — not a Tailwind namespace, consumed directly as
+     CSS custom properties by components (e.g. `transition-duration: var(--duration-fast)`). */
+  --duration-instant: 100ms;
+  --duration-fast: 150ms;
+  --duration-base: 200ms;
+  --duration-slow: 220ms;
+  --duration-shimmer: 1.6s;
+}
+
+/* ---------------------------------------------------------------------- */
+/* 6. Semantic tokens — theme-aware via CSS custom property indirection.  */
+/*    Light values live in :root; [data-theme="dark"] overrides them.     */
+/*    next-themes (configured per-app) stamps data-theme on <html>,       */
+/*    matching DESIGN_SYSTEM.md §2.7's exact attribute name.              */
+/* ---------------------------------------------------------------------- */
+:root {
+  --bg-app: var(--color-neutral-50);
+  --bg-surface: var(--color-neutral-0);
+  --bg-overlay: rgba(13, 14, 16, 0.48);
+  --border-default: var(--color-neutral-200);
+  --border-strong: var(--color-neutral-300);
+  --hover-surface: var(--color-neutral-100);
+  --text-heading: var(--color-neutral-700);
+  --text-body: var(--color-neutral-600);
+  --text-muted: var(--color-neutral-500);
+
+  --shadow-color-sm: rgba(22, 23, 27, 0.08);
+  --shadow-color-md: rgba(22, 23, 27, 0.12);
+  --shadow-color-lg: rgba(22, 23, 27, 0.18);
+}
+
+[data-theme="dark"] {
+  --bg-app: var(--color-neutral-900);
+  --bg-surface: var(--color-neutral-800);
+  --bg-overlay: rgba(0, 0, 0, 0.64);
+  --border-default: var(--color-neutral-700);
+  --border-strong: var(--color-neutral-600);
+  --hover-surface: rgba(56, 59, 66, 0.6); /* neutral-700 at 60% opacity, §2.6 */
+  --text-heading: var(--color-neutral-50);
+  --text-body: var(--color-neutral-200);
+  --text-muted: var(--color-neutral-400);
+
+  --shadow-color-sm: rgba(0, 0, 0, 0.32);
+  --shadow-color-md: rgba(0, 0, 0, 0.4);
+  --shadow-color-lg: rgba(0, 0, 0, 0.48);
+}
+
+/* Map the theme-aware semantic variables into Tailwind's color/shadow
+   namespaces so `bg-app`, `text-body`, `border-default`, `shadow-md`, etc.
+   become real utility classes that respond to [data-theme] automatically. */
+@theme inline {
+  --color-bg-app: var(--bg-app);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-overlay: var(--bg-overlay);
+  --color-border-default: var(--border-default);
+  --color-border-strong: var(--border-strong);
+  --color-hover-surface: var(--hover-surface);
+  --color-text-heading: var(--text-heading);
+  --color-text-body: var(--text-body);
+  --color-text-muted: var(--text-muted);
+
+  --shadow-sm: 0 1px 2px 0 var(--shadow-color-sm);
+  --shadow-md: 0 4px 12px -2px var(--shadow-color-md);
+  --shadow-lg: 0 12px 32px -4px var(--shadow-color-lg);
+}

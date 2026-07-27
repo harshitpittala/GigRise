@@ -1,0 +1,34 @@
+{
+  "name": "@gigrise/ui",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared shadcn/ui + Tailwind component library (DESIGN_SYSTEM.md §7). Phase 0.2 configures the Tailwind v4 token dictionary (DESIGN_SYSTEM.md §17) and shadcn base tooling; no actual components exist yet — those are added once real frontend feature work begins, per that phase's 'no UI pages' scope.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles/theme.css": "./src/styles/theme.css",
+    "./lib/utils": "./src/lib/utils.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit",
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.6.0",
+    "lucide-react": "^0.469.0"
+  },
+  "devDependencies": {
+    "@gigrise/config": "workspace:*",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.2"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  }
+}
