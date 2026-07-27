@@ -4,6 +4,21 @@ This file records every amendment made to any finalized document in `docs/`, per
 
 ---
 
+## 2026-07-19 — Phase 0 Completion: Closing the P0-T7 Gap
+
+**Gap identified:** re-checking `IMPLEMENTATION_PLAN.md`'s Phase 0 task table against the actual repository, P0-T7 ("Tailwind theme + design tokens wired into `packages/ui`") had its token wiring done (Phase 0.2) but its own stated acceptance criterion — "A `Button` component renders with correct gold/indigo tokens in both themes" — was never actually satisfied, since no Button component existed. This is closed now, and P0-T3/T4/T5 (external account provisioning for Supabase, Vercel, Render, Razorpay, Resend, Cloudinary, Sentry) remain the only open Phase 0 items — all three require real accounts/credentials that cannot be created by a coding session.
+
+**Scope judgment call, stated rather than silently assumed:** adding a single `Button` primitive to `packages/ui` was assessed as shared design-system infrastructure (per `PROJECT_SETUP.md` §2's description of that package), not a "product feature" in the sense this and prior sessions' explicit exclusions meant (campaigns, verification, messaging, etc. — GigRise domain concepts). It has zero business logic and no knowledge of any GigRise-specific concept.
+
+**Genuine bug found and fixed (not an architecture change):** Tailwind v4 only scans an app's *own* directory tree for utility-class candidates by default — it does not automatically traverse into a separate pnpm workspace package. Without an explicit `@source` directive, the Button component's own utility classes (`bg-gold-500`, `hover:bg-gold-700`, etc., defined only inside `packages/ui`'s source) were silently never generated in `apps/web`/`apps/admin`'s compiled CSS, even though the component imported and rendered without any error. This was invisible in Phase 0.2's verification because that phase only ever tested token *definitions* referenced directly inside each app's own `globals.css` (`body { background-color: var(--color-bg-app) }`), never a class living purely inside the shared package. Confirmed via direct compiled-CSS inspection before and after the fix (zero gold/indigo/error hex values present before adding `@source`; all present after, including a full, correct `[data-theme=dark]` override block). Fixed by adding `@source "../../../packages/ui/src/**/*.{ts,tsx}";` to both `apps/web/app/globals.css` and `apps/admin/app/globals.css` — every future component added to `packages/ui` benefits from this fix automatically; nothing else needs to change per-component.
+
+No `DECISIONS.md` entry: neither the Button addition nor the `@source` fix introduces a new tool, vendor, or cross-cutting pattern beyond what `DECISIONS.md`'s existing ADRs already cover (Tailwind v4, shadcn, `packages/ui` as the shared component home) — both are implementation details of already-decided architecture, not new decisions.
+
+**Files created:** `packages/ui/src/components/ui/button.tsx`, `.claude/launch.json` (local dev-server preview convenience, not part of the documented architecture).
+**Files modified:** `packages/ui/src/index.ts` (export Button), `packages/ui/package.json` (added `@types/react`/`@types/react-dom`, new `exports` entry), `apps/web/app/page.tsx` (renders the Button variants — verification only, still the Phase 0.1 placeholder page, not a new page), `apps/web/app/globals.css` and `apps/admin/app/globals.css` (the `@source` fix).
+
+---
+
 ## 2026-07-18 — Phase 0.3 Implementation: CI Pipeline (IMPLEMENTATION_PLAN.md task P0-T6)
 
 **Scoping note:** `IMPLEMENTATION_PLAN.md` has no literal "Phase 0.1/0.2/0.3" headers — it has one "Phase 0" with tasks P0-T1 through P0-T8. Prior sessions mapped "Phase 0.1" → P0-T1/T2 (monorepo structure) and "Phase 0.2" → P0-T7 plus the framework-configuration work. By elimination, the only remaining task that is (a) not yet done, (b) pure code/config with no external account dependency, and (c) outside this task's excluded territory (auth/Supabase/APIs/business logic/DB models/pages) is **P0-T6: "GitHub Actions pipeline: lint → type-check → build."** This is what was implemented as "Phase 0.3." P0-T3/T4/T5 (Supabase/Vercel/Render/Razorpay/Resend/Cloudinary/Sentry account provisioning) remain outstanding — they require real external accounts and credentials, which cannot be created by a coding session.

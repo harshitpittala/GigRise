@@ -2,6 +2,16 @@
 @import "@gigrise/ui/styles/theme.css";
 
 /**
+ * Tailwind v4 only scans this app's own directory tree for utility-class
+ * candidates by default — it does NOT automatically traverse into a
+ * separate workspace package. Without this @source directive, any class
+ * name that only appears inside @gigrise/ui's component source is
+ * silently never generated. Same fix as apps/web/app/globals.css; see
+ * that file's comment for the full explanation.
+ */
+@source "../../../packages/ui/src/**/*.{ts,tsx}";
+
+/**
  * Font-family tokens — app-specific, same reasoning as apps/web.
  *
  * --font-display intentionally has NO custom webfont loaded here: per

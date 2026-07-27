@@ -3,13 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Shared shadcn/ui + Tailwind component library (DESIGN_SYSTEM.md §7). Phase 0.2 configures the Tailwind v4 token dictionary (DESIGN_SYSTEM.md §17) and shadcn base tooling; no actual components exist yet — those are added once real frontend feature work begins, per that phase's 'no UI pages' scope.",
+  "description": "Shared shadcn/ui + Tailwind component library (DESIGN_SYSTEM.md §7). Phase 0 (P0-T7): Tailwind v4 token dictionary, shadcn base tooling, and the first component (Button) are in place. No other components exist yet — the rest of the library is added once real frontend feature work begins.",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
     "./styles/theme.css": "./src/styles/theme.css",
-    "./lib/utils": "./src/lib/utils.ts"
+    "./lib/utils": "./src/lib/utils.ts",
+    "./components/ui/button": "./src/components/ui/button.tsx"
   },
   "scripts": {
     "lint": "eslint .",
@@ -25,7 +26,9 @@
   "devDependencies": {
     "@gigrise/config": "workspace:*",
     "tailwindcss": "^4.0.0",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2"
   },
   "peerDependencies": {
     "react": "^19.0.0",

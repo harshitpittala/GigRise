@@ -1,8 +1,12 @@
-// Phase 0.2 (Framework Configuration): exports the shared cn() utility and
-// the theme.css token file (imported via "@gigrise/ui/styles/theme.css").
+// Phase 0 (Environment & Repository Setup): exports the shared cn()
+// utility, the theme.css token file (imported via
+// "@gigrise/ui/styles/theme.css"), and the Button component — added to
+// close IMPLEMENTATION_PLAN.md task P0-T7's acceptance criterion ("A
+// Button component renders with correct gold/indigo tokens in both
+// themes").
 //
-// No components are exported yet — the component library itself
-// (Button, Card, StatusPill, etc., DESIGN_SYSTEM.md §7) is added once real
-// frontend feature work begins, per Phase 0.2's explicit "no UI pages"
-// scope (IMPLEMENTATION_PLAN.md Phase 0).
+// No other components exist yet — the rest of the component library
+// (Card, StatusPill, etc., DESIGN_SYSTEM.md §7) is added once real
+// frontend feature work begins (Phase 4+), not preemptively here.
 export { cn } from "./lib/utils";
+export { Button, type ButtonProps } from "./components/ui/button";
