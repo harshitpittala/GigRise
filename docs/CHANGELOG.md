@@ -4,6 +4,26 @@ This file records every amendment made to any finalized document in `docs/`, per
 
 ---
 
+## 2026-07-28 — Phase 1.2 Implementation: Signup/Login/Logout Screens (P1-T4)
+
+**Scoping note:** same situation as Phase 0.1/0.2/1.1 — `IMPLEMENTATION_PLAN.md` Phase 1 has no literal "1.2" subdivision, only task IDs P1-T1 through P1-T8. Checking each task's stated dependency against the repository as it stood after Phase 1.1: P1-T1/T2/T3/T5/T6/T7/T8 all remain blocked, directly or transitively, on P0-T3 (no real Supabase project provisioned yet — the same external-account blocker carried since Phase 0). **P1-T4 ("Signup/Login/Logout screens (web)") is the sole exception** — its only formal dependency, P0-T7 (Tailwind tokens + Button component), was satisfied in the P0-T7 gap-closure pass. This session's "Phase 1.2" therefore maps to P1-T4, scoped to `apps/web` only (the task name itself says "(web)"; `apps/admin`'s own login screen is Phase 3/Admin CRM Foundation).
+
+**What was built:**
+- Three new shared primitives in `packages/ui` (`DESIGN_SYSTEM.md` §7): `Card` (base surface, radius/border/hover-shadow per spec), `TextField` (40px height, label-above, error swaps border color + icon per §7's "never color-only" rule), `FormError` (icon + message, used for both field-level and form-level errors). Same justification precedent as the Phase 0 `Button` addition: these are named, already-decided design-system primitives, not GigRise product features.
+- `apps/web/lib/validations/auth.ts` — Zod schemas for login (presence-only) and signup (password policy from `AUTHENTICATION.md` §10.1 verbatim: min 10 chars, 1 number, 1 symbol; plus a `talent`/`hirer` role field matching §2 step 2's "Choose Role").
+- `apps/web/app/(auth)/layout.tsx` — the minimal-chrome centered-card layout `DESIGN_SYSTEM.md` §5 specifies for Authentication (`container.sm` width, no app shell, no sidebar). A route group keeps URLs flat (`/login`, `/signup`) per `ARCHITECTURE.md`'s page list.
+- `apps/web/app/(auth)/login/page.tsx` and `apps/web/app/(auth)/signup/page.tsx` — call the Supabase browser client directly (`supabase.auth.signInWithPassword` / `supabase.auth.signUp`), per `AUTHENTICATION.md` §2 step 3: "GigRise's API no longer exposes a custom signup endpoint." Signup passes `role` through `options.data` per §2 step 3-4, for the still-blocked P1-T3 profile-sync trigger to read later.
+- `apps/web/app/logout/route.ts` — POST-only Route Handler (no UI, so it sits outside the `(auth)` group) calling `supabase.auth.signOut()` and redirecting to `/login`.
+
+**Deliberately not built this phase (all separately scoped, still-blocked, or later-phase tasks):** Forgot Password / Reset Password screens (P1-T8, needs Resend + P1-T1); MFA challenge step (§19.2, needs Supabase project MFA settings); the Supabase-error-to-GigRise-envelope translation layer (P1-T5, blocked on P1-T3) — errors are shown via Supabase's own `error.message` for now through the new `FormError` component; the `public.users` webhook sync (P1-T3); the Active Sessions/Security Center screen (P1-T6); Google OAuth (P1-T7); `apps/admin`'s own login (Phase 3); any real post-auth destination (no dashboard/onboarding page exists yet, so both screens redirect to the existing Phase 0 placeholder `/` home page — explicitly a placeholder, not a designed choice).
+
+No `DECISIONS.md` entry: this implements already-decided architecture (`AUTHENTICATION.md` §2/§19.1, `DESIGN_SYSTEM.md` §5/§7/§19.1) with no new tool, vendor, or cross-cutting pattern.
+
+**Files created:** `packages/ui/src/components/ui/{card,text-field,form-error}.tsx`, `apps/web/lib/validations/auth.ts`, `apps/web/app/(auth)/layout.tsx`, `apps/web/app/(auth)/login/page.tsx`, `apps/web/app/(auth)/signup/page.tsx`, `apps/web/app/logout/route.ts`.
+**Files modified:** `packages/ui/src/index.ts` (export `Card`/`TextField`/`FormError`), `packages/ui/package.json` (new `exports` entries + description update).
+
+---
+
 ## 2026-07-20 — Phase 1.1 Implementation: Authentication Foundation
 
 **Scoping note:** `IMPLEMENTATION_PLAN.md` Phase 1 has no literal "1.1/1.2" subdivision either (same situation as Phase 0). This session's explicit in-scope list — Supabase project integration, environment configuration, Supabase client architecture, authentication configuration, repository structure for authentication — doesn't map to any single P1-T task fully; it's the client-side groundwork that sits beneath P1-T1/T3/T4/T7/T8 without completing any of them. **P1-T1 itself ("Configure Supabase Auth project settings") remains blocked**, same as `IMPLEMENTATION_PLAN.md` Phase 0's P0-T3 it depends on: no real Supabase project has been provisioned (still requires an external account this session cannot create). What *is* now in place is the code architecture that will work unchanged once a real project and real `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` values exist.

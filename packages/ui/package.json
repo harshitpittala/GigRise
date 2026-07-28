@@ -3,14 +3,17 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "Shared shadcn/ui + Tailwind component library (DESIGN_SYSTEM.md §7). Phase 0 (P0-T7): Tailwind v4 token dictionary, shadcn base tooling, and the first component (Button) are in place. No other components exist yet — the rest of the library is added once real frontend feature work begins.",
+  "description": "Shared shadcn/ui + Tailwind component library (DESIGN_SYSTEM.md §7). Phase 0 (P0-T7) added Button; Phase 1.2 (P1-T4) added Card, TextField, and FormError for the auth screens. The rest of the library is added once real frontend feature work begins.",
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
     "./styles/theme.css": "./src/styles/theme.css",
     "./lib/utils": "./src/lib/utils.ts",
-    "./components/ui/button": "./src/components/ui/button.tsx"
+    "./components/ui/button": "./src/components/ui/button.tsx",
+    "./components/ui/card": "./src/components/ui/card.tsx",
+    "./components/ui/text-field": "./src/components/ui/text-field.tsx",
+    "./components/ui/form-error": "./src/components/ui/form-error.tsx"
   },
   "scripts": {
     "lint": "eslint .",
