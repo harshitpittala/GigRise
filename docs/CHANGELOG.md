@@ -4,6 +4,25 @@ This file records every amendment made to any finalized document in `docs/`, per
 
 ---
 
+## 2026-07-20 — Phase 1.1 Implementation: Authentication Foundation
+
+**Scoping note:** `IMPLEMENTATION_PLAN.md` Phase 1 has no literal "1.1/1.2" subdivision either (same situation as Phase 0). This session's explicit in-scope list — Supabase project integration, environment configuration, Supabase client architecture, authentication configuration, repository structure for authentication — doesn't map to any single P1-T task fully; it's the client-side groundwork that sits beneath P1-T1/T3/T4/T7/T8 without completing any of them. **P1-T1 itself ("Configure Supabase Auth project settings") remains blocked**, same as `IMPLEMENTATION_PLAN.md` Phase 0's P0-T3 it depends on: no real Supabase project has been provisioned (still requires an external account this session cannot create). What *is* now in place is the code architecture that will work unchanged once a real project and real `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` values exist.
+
+**What was built:** the standard `@supabase/ssr` Next.js App Router pattern (`AUTHENTICATION.md` §7's explicit requirement) — `lib/supabase/client.ts` (browser), `lib/supabase/server.ts` (Server Components/Actions), `lib/supabase/middleware.ts` + root `middleware.ts` (session refresh) — mirrored identically in `apps/web` and `apps/admin`, per `PROJECT_SETUP.md` §3's explicit placement of "Supabase client init" inside each app's own `lib/`. The middleware is deliberately session-refresh only — no route-guard/redirect logic, since that's `IMPLEMENTATION_PLAN.md` task P2-T4 (Phase 2), not this phase.
+
+**Practical gap closed:** Next.js reads environment variables from an app's own directory, not the monorepo root — the root `.env.example` alone was never actually loadable by `apps/web`/`apps/admin` in local development. Added `apps/web/.env.example` and `apps/admin/.env.example`, each a scoped subset (the four `NEXT_PUBLIC_*` variables each app needs) of the authoritative root list, and updated `README.md`'s setup instructions accordingly.
+
+**Backend (`apps/api`) intentionally untouched this phase:** `AUTHENTICATION.md` §7 states the backend's only auth-related job is verifying incoming JWTs against Supabase's JWKS endpoint — but with zero protected routes to attach that verification to (API endpoints are explicitly excluded from this phase's scope), building it now would have nothing to guard and would reach toward Phase 2/RBAC territory prematurely. `core/config.py`'s Supabase settings fields (declared in Phase 0) already cover everything this phase needs from the backend.
+
+**Bug found and fixed during verification:** TypeScript strict mode flagged implicit `any` on the `setAll` cookie-array callback parameter in all four `server.ts`/`middleware.ts` files — `@supabase/ssr`'s own types don't get inferred automatically from an untyped options object. Fixed by explicitly importing and annotating with the library's own exported `CookieOptions` type. Not an architecture change, a type-annotation fix.
+
+No `DECISIONS.md` entry: `@supabase/ssr` was already named explicitly in `AUTHENTICATION.md` §7 and covered by `DECISIONS.md` ADR-001 (Supabase Auth) — this is implementation of an already-decided architecture, not a new decision.
+
+**Files created:** `apps/web/lib/supabase/{client,server,middleware}.ts`, `apps/web/middleware.ts`, `apps/web/.env.example`, `apps/admin/lib/supabase/{client,server,middleware}.ts`, `apps/admin/middleware.ts`, `apps/admin/.env.example`.
+**Files modified:** `apps/web/package.json`, `apps/admin/package.json` (added `@supabase/ssr`, `@supabase/supabase-js`), `README.md` (per-app env setup instructions), `pnpm-lock.yaml`.
+
+---
+
 ## 2026-07-19 — Phase 0 Completion: Closing the P0-T7 Gap
 
 **Gap identified:** re-checking `IMPLEMENTATION_PLAN.md`'s Phase 0 task table against the actual repository, P0-T7 ("Tailwind theme + design tokens wired into `packages/ui`") had its token wiring done (Phase 0.2) but its own stated acceptance criterion — "A `Button` component renders with correct gold/indigo tokens in both themes" — was never actually satisfied, since no Button component existed. This is closed now, and P0-T3/T4/T5 (external account provisioning for Supabase, Vercel, Render, Razorpay, Resend, Cloudinary, Sentry) remain the only open Phase 0 items — all three require real accounts/credentials that cannot be created by a coding session.

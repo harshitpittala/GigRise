@@ -51,7 +51,10 @@ gigrise/
 ```bash
 pnpm install
 cd apps/api && uv sync && cd ../..
-cp .env.example .env.local   # fill in real values locally; never commit them
+cp .env.example .env.local                       # backend (apps/api) reads this
+cp apps/web/.env.example apps/web/.env.local       # Next.js apps read their OWN .env.local,
+cp apps/admin/.env.example apps/admin/.env.local   # not one from the monorepo root
+# fill in real values locally; never commit any .env.local
 ```
 
 ## Common Commands
