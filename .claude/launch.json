@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "gigrise-web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@gigrise/web", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "gigrise-admin",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "@gigrise/admin", "dev"],
+      "port": 3001
+    }
+  ]
+}

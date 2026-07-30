@@ -1,0 +1,37 @@
+{
+  "name": "@gigrise/admin",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Admin/Super Admin CRM — Next.js 15 (PROJECT_SETUP.md §1.1, §3, CRM_SPECIFICATION.md). Phase 1.1 (Authentication Foundation): Supabase client architecture (@supabase/ssr) wired; no login/signup UI, no business logic yet.",
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "lint": "eslint .",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^15.1.3",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "@gigrise/ui": "workspace:*",
+    "@gigrise/types": "workspace:*",
+    "@gigrise/utils": "workspace:*",
+    "@tanstack/react-query": "^5.62.11",
+    "react-hook-form": "^7.54.2",
+    "zod": "^3.24.1",
+    "@hookform/resolvers": "^3.9.1",
+    "next-themes": "^0.4.4",
+    "@supabase/ssr": "^0.5.2",
+    "@supabase/supabase-js": "^2.47.10"
+  },
+  "devDependencies": {
+    "@gigrise/config": "workspace:*",
+    "@tailwindcss/postcss": "^4.0.0",
+    "tailwindcss": "^4.0.0",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "typescript": "^5.7.2"
+  }
+}

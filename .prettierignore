@@ -1,0 +1,12 @@
+node_modules
+.pnpm-store
+.turbo
+.next
+dist
+build
+coverage
+.venv
+__pycache__
+pnpm-lock.yaml
+docs/*.md
+CHANGELOG.md

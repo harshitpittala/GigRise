@@ -4,6 +4,116 @@ This file records every amendment made to any finalized document in `docs/`, per
 
 ---
 
+## 2026-07-29 — Hosting Platform Change: Vercel → Netlify (`apps/web`/`apps/admin`)
+
+**What changed:** `PROJECT_SETUP.md` §10.1 named Vercel for both Next.js apps. The founder provisioned a Netlify project instead while setting up deployment, which is a new external vendor not previously named in `PROJECT_SETUP.md` §1 (`MASTER_DEVELOPMENT_GUIDE.md` §29 requires an ADR for this). Recorded as `DECISIONS.md` ADR-019; `PROJECT_SETUP.md` §10.1 amended in place to describe Netlify's deploy-preview/rollback model instead of Vercel's. `apps/api`/Render is unaffected.
+
+**Files added:** `apps/web/netlify.toml`, `apps/admin/netlify.toml` — each site's Netlify build config (pnpm workspace install from repo root, `@netlify/plugin-nextjs`), assuming that site's "Base directory" is set to its own app folder in Netlify's UI.
+**Files modified:** `docs/PROJECT_SETUP.md` §10.1, `docs/DECISIONS.md` (new ADR-019).
+
+---
+
+## 2026-07-28 — Phase 1.2 Implementation: Signup/Login/Logout Screens (P1-T4)
+
+**Scoping note:** same situation as Phase 0.1/0.2/1.1 — `IMPLEMENTATION_PLAN.md` Phase 1 has no literal "1.2" subdivision, only task IDs P1-T1 through P1-T8. Checking each task's stated dependency against the repository as it stood after Phase 1.1: P1-T1/T2/T3/T5/T6/T7/T8 all remain blocked, directly or transitively, on P0-T3 (no real Supabase project provisioned yet — the same external-account blocker carried since Phase 0). **P1-T4 ("Signup/Login/Logout screens (web)") is the sole exception** — its only formal dependency, P0-T7 (Tailwind tokens + Button component), was satisfied in the P0-T7 gap-closure pass. This session's "Phase 1.2" therefore maps to P1-T4, scoped to `apps/web` only (the task name itself says "(web)"; `apps/admin`'s own login screen is Phase 3/Admin CRM Foundation).
+
+**What was built:**
+- Three new shared primitives in `packages/ui` (`DESIGN_SYSTEM.md` §7): `Card` (base surface, radius/border/hover-shadow per spec), `TextField` (40px height, label-above, error swaps border color + icon per §7's "never color-only" rule), `FormError` (icon + message, used for both field-level and form-level errors). Same justification precedent as the Phase 0 `Button` addition: these are named, already-decided design-system primitives, not GigRise product features.
+- `apps/web/lib/validations/auth.ts` — Zod schemas for login (presence-only) and signup (password policy from `AUTHENTICATION.md` §10.1 verbatim: min 10 chars, 1 number, 1 symbol; plus a `talent`/`hirer` role field matching §2 step 2's "Choose Role").
+- `apps/web/app/(auth)/layout.tsx` — the minimal-chrome centered-card layout `DESIGN_SYSTEM.md` §5 specifies for Authentication (`container.sm` width, no app shell, no sidebar). A route group keeps URLs flat (`/login`, `/signup`) per `ARCHITECTURE.md`'s page list.
+- `apps/web/app/(auth)/login/page.tsx` and `apps/web/app/(auth)/signup/page.tsx` — call the Supabase browser client directly (`supabase.auth.signInWithPassword` / `supabase.auth.signUp`), per `AUTHENTICATION.md` §2 step 3: "GigRise's API no longer exposes a custom signup endpoint." Signup passes `role` through `options.data` per §2 step 3-4, for the still-blocked P1-T3 profile-sync trigger to read later.
+- `apps/web/app/logout/route.ts` — POST-only Route Handler (no UI, so it sits outside the `(auth)` group) calling `supabase.auth.signOut()` and redirecting to `/login`.
+
+**Deliberately not built this phase (all separately scoped, still-blocked, or later-phase tasks):** Forgot Password / Reset Password screens (P1-T8, needs Resend + P1-T1); MFA challenge step (§19.2, needs Supabase project MFA settings); the Supabase-error-to-GigRise-envelope translation layer (P1-T5, blocked on P1-T3) — errors are shown via Supabase's own `error.message` for now through the new `FormError` component; the `public.users` webhook sync (P1-T3); the Active Sessions/Security Center screen (P1-T6); Google OAuth (P1-T7); `apps/admin`'s own login (Phase 3); any real post-auth destination (no dashboard/onboarding page exists yet, so both screens redirect to the existing Phase 0 placeholder `/` home page — explicitly a placeholder, not a designed choice).
+
+No `DECISIONS.md` entry: this implements already-decided architecture (`AUTHENTICATION.md` §2/§19.1, `DESIGN_SYSTEM.md` §5/§7/§19.1) with no new tool, vendor, or cross-cutting pattern.
+
+**Files created:** `packages/ui/src/components/ui/{card,text-field,form-error}.tsx`, `apps/web/lib/validations/auth.ts`, `apps/web/app/(auth)/layout.tsx`, `apps/web/app/(auth)/login/page.tsx`, `apps/web/app/(auth)/signup/page.tsx`, `apps/web/app/logout/route.ts`.
+**Files modified:** `packages/ui/src/index.ts` (export `Card`/`TextField`/`FormError`), `packages/ui/package.json` (new `exports` entries + description update).
+
+---
+
+## 2026-07-20 — Phase 1.1 Implementation: Authentication Foundation
+
+**Scoping note:** `IMPLEMENTATION_PLAN.md` Phase 1 has no literal "1.1/1.2" subdivision either (same situation as Phase 0). This session's explicit in-scope list — Supabase project integration, environment configuration, Supabase client architecture, authentication configuration, repository structure for authentication — doesn't map to any single P1-T task fully; it's the client-side groundwork that sits beneath P1-T1/T3/T4/T7/T8 without completing any of them. **P1-T1 itself ("Configure Supabase Auth project settings") remains blocked**, same as `IMPLEMENTATION_PLAN.md` Phase 0's P0-T3 it depends on: no real Supabase project has been provisioned (still requires an external account this session cannot create). What *is* now in place is the code architecture that will work unchanged once a real project and real `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` values exist.
+
+**What was built:** the standard `@supabase/ssr` Next.js App Router pattern (`AUTHENTICATION.md` §7's explicit requirement) — `lib/supabase/client.ts` (browser), `lib/supabase/server.ts` (Server Components/Actions), `lib/supabase/middleware.ts` + root `middleware.ts` (session refresh) — mirrored identically in `apps/web` and `apps/admin`, per `PROJECT_SETUP.md` §3's explicit placement of "Supabase client init" inside each app's own `lib/`. The middleware is deliberately session-refresh only — no route-guard/redirect logic, since that's `IMPLEMENTATION_PLAN.md` task P2-T4 (Phase 2), not this phase.
+
+**Practical gap closed:** Next.js reads environment variables from an app's own directory, not the monorepo root — the root `.env.example` alone was never actually loadable by `apps/web`/`apps/admin` in local development. Added `apps/web/.env.example` and `apps/admin/.env.example`, each a scoped subset (the four `NEXT_PUBLIC_*` variables each app needs) of the authoritative root list, and updated `README.md`'s setup instructions accordingly.
+
+**Backend (`apps/api`) intentionally untouched this phase:** `AUTHENTICATION.md` §7 states the backend's only auth-related job is verifying incoming JWTs against Supabase's JWKS endpoint — but with zero protected routes to attach that verification to (API endpoints are explicitly excluded from this phase's scope), building it now would have nothing to guard and would reach toward Phase 2/RBAC territory prematurely. `core/config.py`'s Supabase settings fields (declared in Phase 0) already cover everything this phase needs from the backend.
+
+**Bug found and fixed during verification:** TypeScript strict mode flagged implicit `any` on the `setAll` cookie-array callback parameter in all four `server.ts`/`middleware.ts` files — `@supabase/ssr`'s own types don't get inferred automatically from an untyped options object. Fixed by explicitly importing and annotating with the library's own exported `CookieOptions` type. Not an architecture change, a type-annotation fix.
+
+No `DECISIONS.md` entry: `@supabase/ssr` was already named explicitly in `AUTHENTICATION.md` §7 and covered by `DECISIONS.md` ADR-001 (Supabase Auth) — this is implementation of an already-decided architecture, not a new decision.
+
+**Files created:** `apps/web/lib/supabase/{client,server,middleware}.ts`, `apps/web/middleware.ts`, `apps/web/.env.example`, `apps/admin/lib/supabase/{client,server,middleware}.ts`, `apps/admin/middleware.ts`, `apps/admin/.env.example`.
+**Files modified:** `apps/web/package.json`, `apps/admin/package.json` (added `@supabase/ssr`, `@supabase/supabase-js`), `README.md` (per-app env setup instructions), `pnpm-lock.yaml`.
+
+---
+
+## 2026-07-19 — Phase 0 Completion: Closing the P0-T7 Gap
+
+**Gap identified:** re-checking `IMPLEMENTATION_PLAN.md`'s Phase 0 task table against the actual repository, P0-T7 ("Tailwind theme + design tokens wired into `packages/ui`") had its token wiring done (Phase 0.2) but its own stated acceptance criterion — "A `Button` component renders with correct gold/indigo tokens in both themes" — was never actually satisfied, since no Button component existed. This is closed now, and P0-T3/T4/T5 (external account provisioning for Supabase, Vercel, Render, Razorpay, Resend, Cloudinary, Sentry) remain the only open Phase 0 items — all three require real accounts/credentials that cannot be created by a coding session.
+
+**Scope judgment call, stated rather than silently assumed:** adding a single `Button` primitive to `packages/ui` was assessed as shared design-system infrastructure (per `PROJECT_SETUP.md` §2's description of that package), not a "product feature" in the sense this and prior sessions' explicit exclusions meant (campaigns, verification, messaging, etc. — GigRise domain concepts). It has zero business logic and no knowledge of any GigRise-specific concept.
+
+**Genuine bug found and fixed (not an architecture change):** Tailwind v4 only scans an app's *own* directory tree for utility-class candidates by default — it does not automatically traverse into a separate pnpm workspace package. Without an explicit `@source` directive, the Button component's own utility classes (`bg-gold-500`, `hover:bg-gold-700`, etc., defined only inside `packages/ui`'s source) were silently never generated in `apps/web`/`apps/admin`'s compiled CSS, even though the component imported and rendered without any error. This was invisible in Phase 0.2's verification because that phase only ever tested token *definitions* referenced directly inside each app's own `globals.css` (`body { background-color: var(--color-bg-app) }`), never a class living purely inside the shared package. Confirmed via direct compiled-CSS inspection before and after the fix (zero gold/indigo/error hex values present before adding `@source`; all present after, including a full, correct `[data-theme=dark]` override block). Fixed by adding `@source "../../../packages/ui/src/**/*.{ts,tsx}";` to both `apps/web/app/globals.css` and `apps/admin/app/globals.css` — every future component added to `packages/ui` benefits from this fix automatically; nothing else needs to change per-component.
+
+No `DECISIONS.md` entry: neither the Button addition nor the `@source` fix introduces a new tool, vendor, or cross-cutting pattern beyond what `DECISIONS.md`'s existing ADRs already cover (Tailwind v4, shadcn, `packages/ui` as the shared component home) — both are implementation details of already-decided architecture, not new decisions.
+
+**Files created:** `packages/ui/src/components/ui/button.tsx`, `.claude/launch.json` (local dev-server preview convenience, not part of the documented architecture).
+**Files modified:** `packages/ui/src/index.ts` (export Button), `packages/ui/package.json` (added `@types/react`/`@types/react-dom`, new `exports` entry), `apps/web/app/page.tsx` (renders the Button variants — verification only, still the Phase 0.1 placeholder page, not a new page), `apps/web/app/globals.css` and `apps/admin/app/globals.css` (the `@source` fix).
+
+---
+
+## 2026-07-18 — Phase 0.3 Implementation: CI Pipeline (IMPLEMENTATION_PLAN.md task P0-T6)
+
+**Scoping note:** `IMPLEMENTATION_PLAN.md` has no literal "Phase 0.1/0.2/0.3" headers — it has one "Phase 0" with tasks P0-T1 through P0-T8. Prior sessions mapped "Phase 0.1" → P0-T1/T2 (monorepo structure) and "Phase 0.2" → P0-T7 plus the framework-configuration work. By elimination, the only remaining task that is (a) not yet done, (b) pure code/config with no external account dependency, and (c) outside this task's excluded territory (auth/Supabase/APIs/business logic/DB models/pages) is **P0-T6: "GitHub Actions pipeline: lint → type-check → build."** This is what was implemented as "Phase 0.3." P0-T3/T4/T5 (Supabase/Vercel/Render/Razorpay/Resend/Cloudinary/Sentry account provisioning) remain outstanding — they require real external accounts and credentials, which cannot be created by a coding session.
+
+Scope was kept to exactly P0-T6's own stated task ("lint → type-check → build"), not `PROJECT_SETUP.md` §10's fuller prose pipeline description (which also mentions unit tests, integration tests, and a security baseline scan) — no test suite exists anywhere in this repo yet, and `IMPLEMENTATION_PLAN.md` Phase 0's own "Testing requirements" field explicitly states the bar for this phase is "lint/type-check/build," not test execution. Adding empty/fake test stages now would misrepresent coverage that doesn't exist.
+
+| Date | Document | Section | Reason | Impact |
+|---|---|---|---|---|
+| 2026-07-18 | `config/README.md` | Body text | Corrected: GitHub Actions workflows and Dependabot config must live under `.github/`, GitHub's required path — not literally inside `config/` as the Phase 0.1 note implied. This folder's stated purpose (repo-root tooling config) still covers them conceptually. | Low — clarifies a prior note now that the deferred work is delivered; no architectural change |
+
+**What was built:** `.github/workflows/ci.yml` (lint → format:check → type-check → build, triggered on PRs and pushes to `main`); `.github/dependabot.yml` (weekly, grouped by ecosystem: npm, pip for `apps/api`, github-actions) — Dependabot chosen over Renovate per `PROJECT_SETUP.md` §6's "Renovate or Dependabot" (either pre-approved; Dependabot needs only a config file, Renovate needs a separate GitHub App install, which isn't achievable from a coding session). Both YAML files validated for syntax; the exact command sequence in `ci.yml` re-verified locally (`pnpm lint`, `pnpm format:check`, `pnpm type-check`, `pnpm build` all pass).
+
+**Small hygiene fix noticed during verification:** running `pnpm type-check` generated `*.tsbuildinfo` cache files in `apps/web`/`apps/admin` (from the `"incremental": true` tsconfig option set in Phase 0.2) that `.gitignore` didn't yet exclude — added `*.tsbuildinfo` to `.gitignore` so machine-specific build cache never gets tracked, matching the existing `.turbo/`/`.next/` entries' intent.
+
+**Explicitly deferred, not silently omitted:** unit/integration test stages and OWASP ZAP security scanning (`PROJECT_SETUP.md` §9/§10) — added once a real test suite and running API endpoints exist to test/scan. Auto-merge-for-security-patches (`PROJECT_SETUP.md` §6) — requires a separate workflow plus a repository setting, out of scope for this task. Branch-protection rules requiring this CI check before merge — a GitHub repository *setting*, not a file, so it cannot be configured by a coding session; the founder needs to enable it manually.
+
+---
+
+## 2026-07-17 — Phase 0.2 Implementation: Framework Configuration
+
+Tailwind v4 + shadcn/ui base tooling, React Query, React Hook Form/Zod, theme provider, and fonts configured for `apps/web`/`apps/admin`; FastAPI application bootstrap (settings, logging, SQLAlchemy/Alembic config, exception handling, base middleware) configured for `apps/api`. No authentication, database models, business logic, API routes, or UI pages were implemented, matching this phase's explicit scope. No documentation amendment was required — this phase's implementation didn't reveal any specification gap, only one genuine bug (below).
+
+**Genuine bug found and fixed (permitted per this phase's "do not restructure Phase 0.1 unless a genuine bug" instruction):** several Phase 0.1 files had silently acquired CRLF line endings on disk (most likely Windows git's `core.autocrlf` behavior between sessions), which git's own diff view treated as unchanged but which Prettier correctly flagged against `.prettierrc.json`'s `endOfLine: "lf"`. Added `.gitattributes` (`* text=auto eol=lf`) to lock in LF regardless of local git config, then ran `pnpm format` once to normalize the affected files. This is a tooling-consistency fix, not an architecture or content change — no file's actual content changed beyond one JSX line-wrap Prettier applied to `apps/admin/app/layout.tsx`.
+
+**Derived/interpolated values, flagged for the record:** `DESIGN_SYSTEM.md` §2.4 specifies only the 500-step hex for Success/Warning/Error; the 100 (tint) and 700 (shade) steps needed for `packages/ui/src/styles/theme.css` were derived by interpolation (lighter/darker variants of the 500 base), consistent with the doc's own "final hex calibration happens in Figma" caveat. Similarly, dark-mode text-color semantic values (`text-heading`/`text-body`/`text-muted`) and shadow rgba values were not given explicit hex/rgba in `DESIGN_SYSTEM.md` and were derived following the same light/dark mapping pattern the document uses for `bg.*`/`border.*`. None of this changes the document's stated *structure* — only fills in draft values it already said were provisional.
+
+| Date | Document | Section | Reason | Impact |
+|---|---|---|---|---|
+| 2026-07-17 | *(none)* | — | No `docs/*.md` amendment was needed for this phase — the derived color/shadow values above live only in `packages/ui/src/styles/theme.css`, not in the design system document itself, since `DESIGN_SYSTEM.md` §2 already documents these as draft/provisional pending Figma calibration | — |
+
+---
+
+## 2026-07-16 — Phase 0.1 Implementation: Repository & Monorepo Foundation
+
+First production code in the repository — the monorepo scaffold described in `PROJECT_SETUP.md` §2–§8, per `IMPLEMENTATION_PLAN.md` Phase 0. No authentication, database, API, business logic, or UI pages were implemented, matching this phase's explicit scope.
+
+| Date | Document | Section | Reason | Impact |
+|---|---|---|---|---|
+| 2026-07-16 | `DECISIONS.md` | New ADR-018 | Founder explicitly requested Turborepo be added during Phase 0.1 implementation, overriding `PROJECT_SETUP.md` §6 as originally written (pnpm-only) | Medium — introduces one new tool/dependency; documented per `MASTER_DEVELOPMENT_GUIDE.md` §29's rule that a new external dependency requires an ADR |
+| 2026-07-16 | `PROJECT_SETUP.md` | §1 header, §6 | Turborepo added to the package-management tooling description; document status updated to reflect that Phase 0.1 is now implemented, not just specified | Medium — first amendment to this document driven by actual implementation rather than pure planning |
+
+**Naming confirmation (no document change needed):** the task prompt for this phase used `apps/crm`/`apps/backend` and `packages/shared`; the founder confirmed via clarifying question to keep `PROJECT_SETUP.md` §2's original names (`apps/admin`, `apps/api`, `packages/ui`/`types`/`utils`/`config`) rather than amend the document — implemented exactly as already specified, no drift introduced.
+
+**What was built:** root `package.json`/`pnpm-workspace.yaml`/`turbo.json`/`tsconfig` base/`.editorconfig`/`.prettierrc`/`.prettierignore`/expanded `.gitignore`/expanded `.env.example`/`README.md`; `packages/config` (shared ESLint + TSConfig presets), `packages/ui`, `packages/types`, `packages/utils` (all empty placeholders — no components/types/helpers invented ahead of real feature work); `apps/web`, `apps/admin` (minimal Next.js 15 App Router scaffolds, framework-default pages only); `apps/api` (FastAPI scaffold via `uv`, zero routes — not even `/health`, per this task's explicit "do not create APIs"); Husky pre-commit (`lint-staged`) and commit-msg (`commitlint`, Conventional Commits) hooks; `scripts/`, `shared/`, root `config/` placeholder folders with explanatory READMEs. Verified: `pnpm install`, `pnpm build`, `pnpm lint`, `pnpm format:check` all pass across every workspace package.
+
+---
+
 ## 2026-07-15 — Documentation Synchronization Pass (post `CROSS_DOCUMENT_REVIEW.md`)
 
 Following the full cross-document architecture review, every recommendation approved for immediate action was applied across six documents, and two new documents were created. This section records that entire pass. No document's existing intent was overridden without explanation — every entry below preserves the reasoning of the original text and states specifically what changed and why.

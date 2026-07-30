@@ -1,0 +1,10 @@
+# Netlify site config for @gigrise/admin — DECISIONS.md ADR-019 / PROJECT_SETUP.md §10.1.
+# Mirrors apps/web/netlify.toml exactly; see that file's comments. This is a
+# SEPARATE Netlify site/project from apps/web, both pointed at the same
+# GitHub repo with a different "Base directory".
+[build]
+  command = "cd ../.. && pnpm install --frozen-lockfile && pnpm --filter=@gigrise/admin build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

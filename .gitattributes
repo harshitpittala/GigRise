@@ -1,0 +1,14 @@
+# Enforce LF line endings for all text files, regardless of local git
+# config (Windows `core.autocrlf=true` was silently converting files to
+# CRLF between sessions, which git's own diff treated as unchanged but
+# Prettier correctly flagged against .prettierrc.json's `endOfLine: "lf"`).
+* text=auto eol=lf
+
+# Binary files — never touched by line-ending normalization.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary

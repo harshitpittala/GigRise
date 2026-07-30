@@ -1,0 +1,41 @@
+{
+  "name": "gigrise",
+  "private": true,
+  "version": "0.0.0",
+  "description": "GigRise monorepo — see docs/ for the full specification set.",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,mdx,css}\" --ignore-unknown",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,mdx,css}\" --ignore-unknown",
+    "type-check": "turbo run type-check",
+    "test": "turbo run test",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "prettier": "^3.4.2",
+    "eslint": "^9.17.0",
+    "@eslint/js": "^9.17.0",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.19.0",
+    "@gigrise/config": "workspace:*",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.3.0",
+    "@commitlint/cli": "^19.6.1",
+    "@commitlint/config-conventional": "^19.6.3"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix"
+    ],
+    "*.{ts,tsx,js,jsx,json,md,mdx,css}": [
+      "prettier --write"
+    ]
+  }
+}

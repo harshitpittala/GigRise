@@ -1,0 +1,49 @@
+[project]
+name = "gigrise-api"
+version = "0.0.0"
+description = "GigRise backend — FastAPI (PROJECT_SETUP.md §1.2). Phase 0.2 (Framework Configuration): app bootstrap, settings, logging, SQLAlchemy/Alembic configuration, exception handling, and base middleware are wired. Still no routes, models, services, repositories, or authentication."
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.6",
+    "uvicorn[standard]>=0.34.0",
+    "pydantic-settings>=2.7.0",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "asyncpg>=0.30.0",
+    "alembic>=1.14.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8.4",
+    "black>=24.10.0",
+    "mypy>=1.14.0",
+    "pytest>=8.3.4",
+    "pytest-asyncio>=0.25.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = "alembic.*"
+ignore_missing_imports = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
