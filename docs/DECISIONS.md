@@ -114,6 +114,12 @@ This is the canonical log of *why*, not just *what*. Every document in `docs/` s
 **Decision:** Turborepo orchestrates `dev`/`build`/`lint`/`type-check`/`test` across every workspace package, including `apps/api` (Python/FastAPI), via a thin `package.json` wrapper in `apps/api` whose npm scripts shell out to `uv` — this keeps one uniform task-runner interface across a mixed TypeScript/Python monorepo rather than Turborepo only covering the JS/TS packages.
 **Consequences:** Gains task-graph caching and parallelization (`turbo run build` only rebuilds what changed) at the cost of one more tool in the stack and one more piece of root-level config (`turbo.json`) to keep in sync as new packages are added. Since `apps/api`'s real dependency management is still `uv`/`pyproject.toml` — Turborepo only orchestrates *when* its scripts run, never *what* they install — this doesn't change any decision `PROJECT_SETUP.md` §1.2 made about the Python toolchain itself.
 
+## ADR-019: Adopt Netlify instead of Vercel for `apps/web`/`apps/admin` hosting
+**Status:** Accepted
+**Context:** `PROJECT_SETUP.md` §10.1 named Vercel as the hosting platform for both Next.js apps. During deployment setup, the founder provisioned a Netlify project instead — a new external dependency not previously named in `PROJECT_SETUP.md` §1, which `MASTER_DEVELOPMENT_GUIDE.md` §29 requires an ADR for. This supersedes the Vercel-specific reasoning in ADR-004's consequences and ADR-016's context (both mentioned Vercel only as a supporting detail of other decisions, not as their own subject).
+**Decision:** Netlify hosts both `apps/web` and `apps/admin` — same monorepo, same repository, connected via Netlify's native pnpm-workspace/monorepo support (base directory per site, root-level install). `@netlify/plugin-nextjs` (Netlify's official Next.js runtime, auto-detected) provides App Router/server-component support equivalent to what Vercel would have given natively.
+**Consequences:** Loses Vercel's zero-config first-party Next.js integration in favor of a plugin-mediated one — functionally equivalent for this stack's needs (SSR, route handlers, middleware), but any brand-new Next.js feature lands on Netlify slightly after it lands on Vercel, since Vercel ships it first-party. `PROJECT_SETUP.md` §10.1 and its blue/green/preview-deployment description are updated to describe Netlify's deploy-preview/rollback model instead of Vercel's, per this ADR.
+
 ---
 
 ## How to Add a New ADR

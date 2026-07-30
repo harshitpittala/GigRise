@@ -4,6 +4,15 @@ This file records every amendment made to any finalized document in `docs/`, per
 
 ---
 
+## 2026-07-29 — Hosting Platform Change: Vercel → Netlify (`apps/web`/`apps/admin`)
+
+**What changed:** `PROJECT_SETUP.md` §10.1 named Vercel for both Next.js apps. The founder provisioned a Netlify project instead while setting up deployment, which is a new external vendor not previously named in `PROJECT_SETUP.md` §1 (`MASTER_DEVELOPMENT_GUIDE.md` §29 requires an ADR for this). Recorded as `DECISIONS.md` ADR-019; `PROJECT_SETUP.md` §10.1 amended in place to describe Netlify's deploy-preview/rollback model instead of Vercel's. `apps/api`/Render is unaffected.
+
+**Files added:** `apps/web/netlify.toml`, `apps/admin/netlify.toml` — each site's Netlify build config (pnpm workspace install from repo root, `@netlify/plugin-nextjs`), assuming that site's "Base directory" is set to its own app folder in Netlify's UI.
+**Files modified:** `docs/PROJECT_SETUP.md` §10.1, `docs/DECISIONS.md` (new ADR-019).
+
+---
+
 ## 2026-07-28 — Phase 1.2 Implementation: Signup/Login/Logout Screens (P1-T4)
 
 **Scoping note:** same situation as Phase 0.1/0.2/1.1 — `IMPLEMENTATION_PLAN.md` Phase 1 has no literal "1.2" subdivision, only task IDs P1-T1 through P1-T8. Checking each task's stated dependency against the repository as it stood after Phase 1.1: P1-T1/T2/T3/T5/T6/T7/T8 all remain blocked, directly or transitively, on P0-T3 (no real Supabase project provisioned yet — the same external-account blocker carried since Phase 0). **P1-T4 ("Signup/Login/Logout screens (web)") is the sole exception** — its only formal dependency, P0-T7 (Tailwind tokens + Button component), was satisfied in the P0-T7 gap-closure pass. This session's "Phase 1.2" therefore maps to P1-T4, scoped to `apps/web` only (the task name itself says "(web)"; `apps/admin`'s own login screen is Phase 3/Admin CRM Foundation).
