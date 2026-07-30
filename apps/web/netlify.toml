@@ -1,13 +1,11 @@
 # Netlify site config for @gigrise/web — DECISIONS.md ADR-019 / PROJECT_SETUP.md §10.1.
-# Assumes this site's "Base directory" is set to `apps/web` in Netlify's UI, so
-# `command`/`publish` below are relative to that directory.
-#
-# The build command steps back out to the monorepo root before installing —
-# pnpm workspaces (packages/ui, types, utils) must be linked from root, not
-# installed in isolation inside apps/web.
+# Netlify's monorepo build runs `build.command` from the REPO ROOT
+# regardless of the "Base directory"/packagePath setting (confirmed via
+# apps/admin's deploy log: "Current directory: /opt/build/repo") — paths
+# below are written relative to root, not to apps/web. Do not add a `cd`.
 [build]
-  command = "cd ../.. && pnpm install --frozen-lockfile && pnpm --filter=@gigrise/web build"
-  publish = ".next"
+  command = "pnpm install --frozen-lockfile && pnpm --filter=@gigrise/web build"
+  publish = "apps/web/.next"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

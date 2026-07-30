@@ -1,10 +1,11 @@
 # Netlify site config for @gigrise/admin — DECISIONS.md ADR-019 / PROJECT_SETUP.md §10.1.
-# Mirrors apps/web/netlify.toml exactly; see that file's comments. This is a
-# SEPARATE Netlify site/project from apps/web, both pointed at the same
-# GitHub repo with a different "Base directory".
+# Netlify's monorepo build runs `build.command` from the REPO ROOT
+# regardless of the "Base directory"/packagePath setting (confirmed via
+# deploy log: "Current directory: /opt/build/repo") — paths below are
+# written relative to root, not to apps/admin. Do not add a `cd` here.
 [build]
-  command = "cd ../.. && pnpm install --frozen-lockfile && pnpm --filter=@gigrise/admin build"
-  publish = ".next"
+  command = "pnpm install --frozen-lockfile && pnpm --filter=@gigrise/admin build"
+  publish = "apps/admin/.next"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
